@@ -1,0 +1,15 @@
+{
+  "bpm": 130,
+  "samples": [
+    { "file": "Drums 1.wav", "play_mode": "always" },
+    { "file": "Drums 2.wav", "play_mode": "always" },
+    { "file": "Bass_SC [Drums 1].wav", "play_mode": "always" },
+    { "file": "Bass_SC [Drums 2].wav", "play_mode": "always" },
+    { "file": "Percs 1.wav", "play_mode": "always" },
+    { "file": "Percs 2.wav", "play_mode": "always" },
+    { "file": "Organ.wav", "play_mode": "always" },
+    { "file": "Horns.wav", "play_mode": "always" },
+    { "file": "Guitar.wav", "play_mode": "always" },
+    { "file": "Guitar Accents.wav", "play_mode": "always" }
+  ]
+}

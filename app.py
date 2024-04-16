@@ -124,7 +124,7 @@ if __name__ == "__main__":
     # Initial setup for pygame mixer
     pygame.mixer.init()
     pygame.mixer.set_num_channels(32)
-    current_set = "set1"
+    current_set = "set2"
     samples_dir = "samples/"
     config_path = os.path.join(samples_dir, current_set, "config.json")
 

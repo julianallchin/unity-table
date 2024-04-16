@@ -4,18 +4,20 @@ body {
 }
 
 #button-container {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 6 equal columns */
-  grid-template-rows: repeat(4, 1fr); /* 4 equal rows */
-  gap: 20px; /* 10px gap between buttons */
-  justify-content: center; /* Center grid horizontally */
-  align-content: center; /* Center grid vertically */
-  width: 100%; /* Ensure the grid container fills its parent */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center; /* Center items horizontally */
+  align-content: center; /* Center items vertically */
+  width: 100%; /* Ensure the container fills its parent */
+  height: 100%; /* Ensure the container fills its parent */
+  gap: 20px; /* Space between buttons */
 }
 
 .button {
   border-radius: 50%;
-  width: 100%; /* Full width of the grid cell */
+  /* 6 across */
+  width: calc(100% / 6 - 20px); /* 6 buttons per row */
   background-color: #1d2021;
   color: #ebdbb2;
   display: flex;
@@ -38,4 +40,9 @@ body {
 
 .on {
   background-color: #4caf50;
+}
+
+.unavailable {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
 }

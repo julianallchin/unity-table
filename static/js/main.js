@@ -10,7 +10,15 @@ document.addEventListener("DOMContentLoaded", function () {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ index: index, state: state }),
-      });
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (!data.success) {
+            button.classList.add("unavailable");
+          } else {
+            button.classList.remove("unavailable");
+          }
+        });
     });
   });
 });
