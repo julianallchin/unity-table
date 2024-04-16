@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Button Sampler</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </head>
+  <body>
+    <div id="button-container">
+      {% for i in range(24) %}
+      <div class="button">{{ i+1 }}</div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

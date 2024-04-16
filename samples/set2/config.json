@@ -1,0 +1,20 @@
+{
+  "bpm": 90,
+  "samples": [
+    { "file": "Drums 1.wav", "play_mode": "always" },
+    { "file": "Bass_SC [Drums 1].wav", "play_mode": "always" },
+    { "file": "Shaker.wav", "play_mode": "always" },
+    { "file": "Percs 1.wav", "play_mode": "always" },
+    { "file": "Percs 2.wav", "play_mode": "always" },
+    { "file": "Muffled Percussion.wav", "play_mode": "always" },
+    { "file": "FX_Atmosphere 1.wav", "play_mode": "always" },
+    { "file": "FX_Atmosphere 2.wav", "play_mode": "always" },
+    { "file": "Pad Chords.wav", "play_mode": "always" },
+    { "file": "Synth Arp.wav", "play_mode": "always" },
+    { "file": "Synth Arp_Distorted.wav", "play_mode": "always" },
+    { "file": "Guitar.wav", "play_mode": "always" },
+    { "file": "Guitar Pluck.wav", "play_mode": "always" },
+    { "file": "Stack.wav", "play_mode": "always" },
+    { "file": "Vocal Lead.wav", "play_mode": "always" }
+  ]
+}

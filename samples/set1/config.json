@@ -1,0 +1,19 @@
+{
+  "bpm": 115,
+  "samples": [
+    { "file": "Kick.wav", "play_mode": "always" },
+    { "file": "Hats 1.wav", "play_mode": "always" },
+    { "file": "Hats 2.wav", "play_mode": "always" },
+    { "file": "Snare.wav", "play_mode": "always" },
+    { "file": "Tambourine.wav", "play_mode": "always" },
+    { "file": "Soft Key Chords.wav", "play_mode": "always" },
+    { "file": "Guitar Chops.wav", "play_mode": "always" },
+    { "file": "Bass.wav", "play_mode": "always" },
+    { "file": "Bright Key Chords.wav", "play_mode": "always" },
+    { "file": "Bright Synth Chords.wav", "play_mode": "always" },
+    { "file": "Bell Arp.wav", "play_mode": "always" },
+    { "file": "Guitar Strum.wav", "play_mode": "always" },
+    { "file": "Drum loop (maybe life) 128 BPM.wav", "play_mode": "always", "bpm": 128 },
+    { "file": "Drum loop (Marea) 123 BPM.wav", "play_mode": "always", "bpm": 123 }
+  ]
+}

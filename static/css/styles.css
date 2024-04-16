@@ -1,0 +1,41 @@
+body {
+  background-color: #282828;
+  padding: 20px;
+}
+
+#button-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 equal columns */
+  grid-template-rows: repeat(4, 1fr); /* 4 equal rows */
+  gap: 20px; /* 10px gap between buttons */
+  justify-content: center; /* Center grid horizontally */
+  align-content: center; /* Center grid vertically */
+  width: 100%; /* Ensure the grid container fills its parent */
+}
+
+.button {
+  border-radius: 50%;
+  width: 100%; /* Full width of the grid cell */
+  background-color: #1d2021;
+  color: #ebdbb2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: relative; /* Positioning context for pseudo-element */
+  overflow: hidden; /* Keep pseudo-element inside the button */
+  box-shadow: rgba(12, 13, 13, 0.4) 3px 3px 6px 0px inset, rgba(255, 255, 255, 0.1) -3px -3px 6px 1px inset;
+}
+
+.button::before {
+  content: "";
+  display: block;
+  padding-top: 100%; /* This creates a square aspect ratio */
+}
+
+.on {
+  background-color: #4caf50;
+}
