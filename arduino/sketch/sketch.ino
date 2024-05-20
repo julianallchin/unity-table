@@ -1,30 +1,84 @@
 #include <Trill.h>
 
-Trill trillSensor;
-boolean isTouched = false;
+Trill rings[4];                                       // Array to hold the four Trill ring objects
+float volumes[4] = { 0.0, 0.0, 0.0, 0.0 };            // Array to store volume levels
+float lastTouchLocation[4] = { 0.0, 0.0, 0.0, 0.0 };  // Array to store the last touch location
+bool isTouching[4] = { false, false, false, false };  // Array to store touch states
+float sensitivity = 2;
 
 void setup() {
-  // Initialise the touch sensor
+  // Initialize the serial communication
   Serial.begin(115200);
-  int ret = trillSensor.setup(Trill::TRILL_RING);
-  if(ret != 0) {
-    Serial.println("Failed to initialise trillSensor");
-    Serial.print("Error code: ");
-    Serial.println(ret);
+  int ret;
+
+  // Initialize the Trill ring sensors
+  for (int i = 0; i < 4; i++) {
+    ret = rings[i].setup(Trill::TRILL_RING, 56 + i);
+
+    if (ret != 0) {
+      Serial.print("Failed to initialise Trill ring ");
+      Serial.print(i);
+      Serial.print(" with error code: ");
+      Serial.println(ret);
+    }
   }
 }
 
 void loop() {
-  delay(50); // Read sensor 20 times per second
-  trillSensor.read();
+  delay(50);  // Read sensor 20 times per second
 
-  // Check if there are any touches
-  if(trillSensor.getNumTouches() > 0) {
-    isTouched = true;
-  } else {
-    isTouched = false;
+  // Read the touch data from each sensor and update the volumes array
+  for (int i = 0; i < 4; i++) {
+    rings[i].read();
+    int numTouches = rings[i].getNumTouches();
+
+    if (numTouches > 0) {
+      float touchLocation = rings[i].touchLocation(0) / 3600.0;  // Get the angle of the first touch
+
+      if (!isTouching[i]) {
+        // First touch: initialize lastTouchLocation
+        lastTouchLocation[i] = touchLocation;
+        volumes[i] = 0.0;  // Reset volume on first touch
+        isTouching[i] = true;
+      }
+
+      // Calculate the delta (change in angle)
+      float delta = touchLocation - lastTouchLocation[i];
+
+      // Handle wrapping around the boundary
+      if (delta > 0.5) {
+        delta -= 1.0;
+      } else if (delta < -0.5) {
+        delta += 1.0;
+      }
+
+      // if (i == 0) {
+      //   Serial.println(delta);
+      // }
+
+      // Update the volume, ensuring it stays within the range [0, 1]
+      volumes[i] += delta * sensitivity;
+      if (volumes[i] > 1.0) {
+        volumes[i] = 1.0;
+      } else if (volumes[i] < 0) {
+        volumes[i] = 0;
+      }
+
+      // Update the last touch location
+      lastTouchLocation[i] = touchLocation;
+    } else {
+      // No touch means volume is zero and reset the touch state
+      volumes[i] = 0.0;
+      isTouching[i] = false;
+    }
   }
-  Serial.print("<");
-  Serial.print(isTouched);
-  Serial.println(">");
+
+  // Format and send volume levels
+  for (int i = 0; i < 4; i++) {
+    Serial.print(volumes[i]);
+    if (i < 3) {
+      Serial.print(",");
+    }
+  }
+  Serial.println("");
 }

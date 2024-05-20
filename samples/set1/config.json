@@ -3,10 +3,10 @@
   "samples": [
     { "file": "Kick.wav", "play_mode": "always" },
     { "file": "Hats 1.wav", "play_mode": "always" },
-    { "file": "Hats 2.wav", "play_mode": "always" },
-    { "file": "Snare.wav", "play_mode": "always" },
-    { "file": "Tambourine.wav", "play_mode": "always" },
     { "file": "Soft Key Chords.wav", "play_mode": "always" },
+    { "file": "Snare.wav", "play_mode": "always" },
+    { "file": "Hats 2.wav", "play_mode": "always" },
+    { "file": "Tambourine.wav", "play_mode": "always" },
     { "file": "Guitar Chops.wav", "play_mode": "always" },
     { "file": "Bass.wav", "play_mode": "always" },
     { "file": "Bright Key Chords.wav", "play_mode": "always" },
