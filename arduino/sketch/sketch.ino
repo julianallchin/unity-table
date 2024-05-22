@@ -73,11 +73,19 @@ void loop() {
     }
   }
 
+   // Send volume levels as MIDI Control Change messages
+  for (int i = 0; i < 4; i++) {
+    int midiValue = map(volumes[i], 0, 1, 0, 127);  // Scale volume to MIDI range [0, 127]
+    usbMIDI.sendControlChange(21 + i, midiValue, 1);  // Sending on CC 21-24, Channel 1
+  }
+
+  usbMIDI.send_now();
+
   // Format and send volume levels
   for (int i = 0; i < 4; i++) {
     Serial.print(volumes[i]);
     if (i < 3) {
-      Serial.print(",");
+      Serial.print(", ");
     }
   }
   Serial.println("");
