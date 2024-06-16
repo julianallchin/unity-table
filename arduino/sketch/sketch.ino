@@ -1,133 +1,147 @@
 #include <Trill.h>
 #include <FastLED.h>
+#include <Wire.h>
+#include "TCA9548.h"
 
-#define NUM_RINGS  4
-#define LED_PIN     11
+#define NUM_ROWS 4
+#define NUM_RINGS_PER_ROW 5
+#define NUM_RINGS (NUM_ROWS * NUM_RINGS_PER_ROW)
+#define LED_PIN 11
 #define LEDS_PER_RING 12
 #define NUM_LEDS (LEDS_PER_RING * NUM_RINGS)
-#define BRIGHTNESS  64
-#define LED_TYPE    WS2811
+#define BRIGHTNESS 64
+#define LED_TYPE WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
 
 Trill rings[NUM_RINGS];                                // Array to hold the Trill ring objects
-float volumes[NUM_RINGS] = { 0.0, 0.0, 0.0, 0.0 };      // Array to store volume levels
-float lastTouchLocation[NUM_RINGS] = { 0.0, 0.0, 0.0, 0.0 };  // Array to store the last touch location
-bool isTouching[NUM_RINGS] = { false, false, false, false };  // Array to store touch states
+float volumes[NUM_RINGS] = { 0.0 };                    // Array to store volume levels
+float lastTouchLocation[NUM_RINGS] = { 0.0 };          // Array to store the last touch location
+bool isTouching[NUM_RINGS] = { false };                // Array to store touch states
 float sensitivity = 4;
+
+
+#define TCAADDR 0x70
+
+TCA9548 tca(TCAADDR, &Wire1);
 
 void updateLEDs(float value, int ringIndex) {
   int startLED = ringIndex * LEDS_PER_RING;
   int endLED = startLED + LEDS_PER_RING;
-  int numFullLEDs = (int)(value * LEDS_PER_RING); // Calculate the number of full LEDs
-  float fractionalLED = (value * LEDS_PER_RING) - numFullLEDs; // Calculate the fractional part
+  int numFullLEDs = (int)(value * LEDS_PER_RING);
+  float fractionalLED = (value * LEDS_PER_RING) - numFullLEDs;
 
-  // Turn on the required number of LEDs for the specified ring
   for (int i = startLED; i < endLED; i++) {
-    int hue = map(i, startLED, endLED, 0, 255); // Map the LED index to a hue value
+    int hue = map(i, startLED, endLED, 0, 255);
 
     if (i < startLED + numFullLEDs) {
-      leds[i] = CHSV(hue, 255, 255); // Full brightness for full LEDs with rainbow color
+      leds[i] = CHSV(hue, 255, 255);
     } else if (i == startLED + numFullLEDs) {
       leds[i] = CHSV(hue, 255, 255);
-      leds[i].fadeLightBy(255 - (fractionalLED * 255)); // Set brightness proportionally for the fractional LED
+      leds[i].fadeLightBy(255 - (fractionalLED * 255));
     } else {
-      leds[i] = CRGB::Black; // Turn off the remaining LEDs
+      leds[i] = CRGB::Black;
     }
   }
 
-  FastLED.show(); // Update the LEDs to the new settings
+  FastLED.show();
 }
 
 void setup() {
-  delay(3000);
-  // Initialize the serial communication
-  Serial.begin(115200);
+  delay(6000);
+  Serial.begin(9600);
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(BRIGHTNESS);
+  Wire1.begin();
+  Wire1.setClock( 400000UL);
 
-  // Setup LEDS
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness( BRIGHTNESS );
-  int ret;
+  if (!tca.begin()) {
+      Serial.println("Failed to initialize TCA9548. Check connections!");
+      while (1);
+  }
 
-  // Initialize the Trill ring sensors
-  for (int i = 0; i < NUM_RINGS; i++) {
-    ret = rings[i].setup(Trill::TRILL_RING, 56 + i);
-
-    if (ret != 0) {
-      Serial.print("Failed to initialise Trill ring ");
-      Serial.print(i);
-      Serial.print(" with error code: ");
-      Serial.println(ret);
-    } else {
-      rings[i].setNoiseThreshold(220);
+  for (int row = 0; row < NUM_ROWS; row++) {
+    int port;
+    if (row == 0) port = 7;
+    if (row == 1) port = 6;
+    if (row == 2) port = 4;
+    if (row == 3) port = 3;
+    if (!tca.selectChannel(port)) {
+        Serial.print("Failed to select TCA channel "); Serial.println(port);
+        continue;
+    }
+    for (int i = 0; i < NUM_RINGS_PER_ROW; i++) {
+      int ringIndex = row * NUM_RINGS_PER_ROW + i;
+      int ret = rings[ringIndex].setup(Trill::TRILL_RING, 56 + i, &Wire1);
+      if (ret != 0) {
+        Serial.print("Failed to initialise Trill ring ");
+        Serial.print(ringIndex);
+        Serial.print(" with error code: ");
+        Serial.println(ret);
+      } else {
+        
+        rings[ringIndex].setNoiseThreshold(150);
+        // rings[ringIndex].setScanSettings(3, 16);
+      }
     }
   }
+
+  Serial.println("Initialized!");
 }
 
 void loop() {
-  delay(50);  // Read sensor 20 times per second
-
-  // Read the touch data from each sensor and update the volumes array
-  for (int i = 0; i < NUM_RINGS; i++) {
-    rings[i].read();
-    int numTouches = rings[i].getNumTouches();
-
-    if (numTouches > 0) {
-      float touchLocation = rings[i].touchLocation(0) / 3600.0;  // Get the angle of the first touch
-
-      if (!isTouching[i]) {
-        // First touch: initialize lastTouchLocation
-        lastTouchLocation[i] = touchLocation;
-        volumes[i] = 0.0;  // Reset volume on first touch
-        isTouching[i] = true;
-      }
-
-      // Calculate the delta (change in angle)
-      float delta = touchLocation - lastTouchLocation[i];
-
-      // Handle wrapping around the boundary
-      if (delta > 0.5) {
-        delta -= 1.0;
-      } else if (delta < -0.5) {
-        delta += 1.0;
-      }
-
-      // Update the volume, ensuring it stays within the range [0, 1]
-      volumes[i] += delta * sensitivity;
-      if (volumes[i] > 1.0) {
-        volumes[i] = 1.0;
-      } else if (volumes[i] < 0) {
-        volumes[i] = 0;
-      }
-
-      // Update the last touch location
-      lastTouchLocation[i] = touchLocation;
-    } else {
-      // No touch means volume is zero and reset the touch state
-      volumes[i] = 0.0;
-      isTouching[i] = false;
+  // delay(50);
+  for (int row = 0; row < NUM_ROWS; row++) {
+    
+    int port;
+    if (row == 0) port = 7;
+    if (row == 1) port = 6;
+    if (row == 2) port = 4;
+    if (row == 3) port = 3;
+    if (!tca.selectChannel(port)) {
+        Serial.print("Failed to select TCA channel "); Serial.println(port);
+        continue;
     }
-  }
 
-  // Send volume levels as MIDI Control Change messages
-  for (int i = 0; i < NUM_RINGS; i++) {
-    int midiValue = map(volumes[i], 0, 1, 0, 127);  // Scale volume to MIDI range [0, 127]
-    usbMIDI.sendControlChange(21 + i, midiValue, 1);  // Sending on CC 21-24, Channel 1
+    for (int i = 0; i < NUM_RINGS_PER_ROW; i++) {
+      int ringIndex = row * NUM_RINGS_PER_ROW + i;
+      rings[ringIndex].read();
+      int numTouches = rings[ringIndex].getNumTouches();
+
+      if (numTouches > 0) {
+        float touchLocation = rings[ringIndex].touchLocation(0) / 3600.0;
+        if (!isTouching[ringIndex]) {
+          lastTouchLocation[ringIndex] = touchLocation;
+          volumes[ringIndex] = 0.0;
+          isTouching[ringIndex] = true;
+        }
+
+        float delta = touchLocation - lastTouchLocation[ringIndex];
+        if (delta > 0.5) delta -= 1.0;
+        else if (delta < -0.5) delta += 1.0;
+
+        volumes[ringIndex] += delta * sensitivity;
+        volumes[ringIndex] = constrain(volumes[ringIndex], 0.0, 1.0);
+        lastTouchLocation[ringIndex] = touchLocation;
+
+      } else {
+        volumes[ringIndex] = 0.0;
+        isTouching[ringIndex] = false;
+      }
+
+      int midiValue = map(volumes[ringIndex], 0, 1, 0, 127);  // Scale volume to MIDI range [0, 127]
+      usbMIDI.sendControlChange(21 + ringIndex, midiValue, 1);  // Sending on CC 21-24, Channel 1
+    }
   }
 
   usbMIDI.send_now();
 
-  // Update LEDs based on the volume level for each ring
-  for (int i = 0; i < NUM_RINGS; i++) {
-    updateLEDs(volumes[i], i);
-  }
-
-  // Format and send volume levels
-  for (int i = 0; i < NUM_RINGS; i++) {
-    Serial.print(volumes[i]);
-    if (i < NUM_RINGS - 1) {
-      Serial.print(", ");
-    }
-  }
-  Serial.println("");
+  // // Format and send volume levels
+  // for (int i = 0; i < NUM_RINGS; i++) {
+  //   Serial.print(volumes[i]);
+  //   if (i < NUM_RINGS - 1) {
+  //     Serial.print(", ");
+  //   }
+  // }
+  // Serial.println("");
 }

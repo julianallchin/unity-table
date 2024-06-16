@@ -1,25 +1,46 @@
+
 s.waitForBoot({
+
     // Define the paths to your sample files
     ~samplePaths = [
-        "/home/julianallchin/github/unity-table/samples/set2/Percs 1.wav",
-		"/home/julianallchin/github/unity-table/samples/set2/Pad Chords.wav",
-        "/home/julianallchin/github/unity-table/samples/set2/Synth Arp.wav",
-        "/home/julianallchin/github/unity-table/samples/set2/Shaker.wav"
+		"/Users/julianallchin/github/unity-table/samples/set4/Kick 1.wav",
+        "/Users/julianallchin/github/unity-table/samples/set4/Drums Perc 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Drums Perc 2.wav",
+        "/Users/julianallchin/github/unity-table/samples/set4/Drums Top 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Drums Top 2.wav",
+
+		"/Users/julianallchin/github/unity-table/samples/set4/Basses 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Basses 2.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Basses 3.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Chords 1 (Long).wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Chords 2.wav",
+
+		"/Users/julianallchin/github/unity-table/samples/set4/Piano 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Arp.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Atmos Pluck.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Atmos Pad 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Atmos Pad 2.wav",
+
+		"/Users/julianallchin/github/unity-table/samples/set4/Lead 1 (Long).wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Lead 2 (Long).wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/Lead 3 (Long).wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/FX Sweeps 1.wav",
+		"/Users/julianallchin/github/unity-table/samples/set4/FX Sweeps 2.wav",
     ];
 
     // Load the samples into buffers
     ~buffers = ~samplePaths.collect { |path| Buffer.read(s, path) };
 
     // Define control buses for volume
-    ~volBuses = (1..4).collect { Bus.control(s, 1) };
-    ~defaultVolume = 1.0; // Default volume level (1.0 is max, 0.0 is silence)
+    ~volBuses = (1..20).collect { Bus.control(s, 1) };
+    ~defaultVolume = 0.0; // Default volume level (1.0 is max, 0.0 is silence)
 
     // Set the initial volume for each sample
     ~volBuses.do { |bus| bus.set(~defaultVolume) };
 
     // Define a SynthDef to play samples in a loop with controllable volume
     SynthDef(\playSample, {
-        arg out = 0, bufnum, volBus, loop = 1;
+        arg out = 1, bufnum, volBus, loop = 1;
         var sig, vol;
 
         // Get the volume from the control bus
@@ -37,7 +58,7 @@ s.waitForBoot({
 	MIDIIn.connectAll;
 
     // Create an array to store the Synths
-    ~synths = Array.newClear(4);
+    ~synths = Array.newClear(8);
 
     // Function to create and play synths
     ~playSynths = {
@@ -50,8 +71,8 @@ s.waitForBoot({
 
     // Define MIDI CC responders for each sample
     CCResponder({ |src, chan, num, val|
-        if (chan == 0 and: (num >= 21 and: num <= 24)) {
-            var index = num - 21;
+        if (chan == 0) {
+			var index = num - 21;
             // Scale MIDI value (0-127) to volume range (0.0-1.0) and set the volume
             ~volBuses[index].set(val / 127.0);
         }
